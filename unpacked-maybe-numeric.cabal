@@ -18,6 +18,8 @@ source-repository head
 
 library
   exposed-modules:
+    Data.Maybe.Unpacked.Numeric.Complex.Float
+    Data.Maybe.Unpacked.Numeric.Complex.Double
     Data.Maybe.Unpacked.Numeric.Float
     Data.Maybe.Unpacked.Numeric.Double
     Data.Maybe.Unpacked.Numeric.Int
