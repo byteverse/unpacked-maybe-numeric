@@ -94,7 +94,7 @@ nothing = Maybe (# (# #) | #)
 just :: Word64 -> Maybe
 just (W64# w) = Maybe (# | w #)
 
-fromMaybe :: Word64 -> Maybe -> Word32
+fromMaybe :: Word64 -> Maybe -> Word64
 fromMaybe a (Maybe m) = case m of
   (# (# #) | #) -> a
   (# | w #) -> W64# w
