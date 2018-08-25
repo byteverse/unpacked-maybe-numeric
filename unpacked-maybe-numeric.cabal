@@ -23,10 +23,10 @@ library
     Data.Maybe.Unpacked.Numeric.Float
     Data.Maybe.Unpacked.Numeric.Double
     Data.Maybe.Unpacked.Numeric.Int
-    --Data.Maybe.Unpacked.Numeric.Int8
-    --Data.Maybe.Unpacked.Numeric.Int16
-    --Data.Maybe.Unpacked.Numeric.Int32
-    --Data.Maybe.Unpacked.Numeric.Int64
+    Data.Maybe.Unpacked.Numeric.Int8
+    Data.Maybe.Unpacked.Numeric.Int16
+    Data.Maybe.Unpacked.Numeric.Int32
+    Data.Maybe.Unpacked.Numeric.Int64
     Data.Maybe.Unpacked.Numeric.Word
     Data.Maybe.Unpacked.Numeric.Word8
     Data.Maybe.Unpacked.Numeric.Word16
