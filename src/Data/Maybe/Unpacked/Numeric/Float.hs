@@ -4,7 +4,7 @@
 {-# LANGUAGE UnboxedSums #-}
 {-# LANGUAGE UnboxedTuples #-}
 
-module Data.Maybe.Unpacked.Numeric.Word
+module Data.Maybe.Unpacked.Numeric.Float
   ( Maybe(..)
   , just
   , nothing
@@ -17,17 +17,15 @@ module Data.Maybe.Unpacked.Numeric.Word
 import Prelude hiding (Maybe,maybe)
 
 import GHC.Base (build)
-import GHC.Exts (Word#,(*#),(+#),and#,indexWordArray#,readWordArray#,word2Int#, (==#))
-import GHC.Word (Word(W#))
+import GHC.Exts (Float#,(*#),(+#),and#,word2Int#, (==#),Float(F#))
 import Data.Primitive.Types (Prim(..))
 
 import GHC.Read (Read(readPrec), expectP)
 import Text.Read (parens, Lexeme(Ident), lexP, (+++))
 import Text.ParserCombinators.ReadPrec (prec, step)
-
 import qualified Prelude as P
 
-data Maybe = Maybe (# (# #) | Word# #)
+data Maybe = Maybe (# (# #) | Float# #)
 
 instance Eq Maybe where
   ma == mb =
@@ -40,9 +38,9 @@ instance Ord Maybe where
 instance Show Maybe where
   showsPrec p (Maybe m) = case m of
     (# (# #) | #) -> showString "nothing"
-    (# | w #) -> showParen (p > 10)
+    (# | d #) -> showParen (p > 10)
       $ showString "just "
-      . showsPrec 11 (W# w)
+      . showsPrec 11 (F# d)
 
 instance Read Maybe where
   readPrec = parens $ nothingP +++ justP
@@ -55,31 +53,17 @@ instance Read Maybe where
         a <- step readPrec
         return (just a)
 
-instance Prim Maybe where
-  sizeOf# _ = sizeOf# (undefined :: Word) *# 2#
-  alignment# _ = alignment# (undefined :: Word)
-  indexByteArray# arr ix = Maybe
-    (case indexWordArray# arr (2# *# ix) of
-      0## -> (# (# #) | #)
-      _ -> (# | (indexWordArray# arr ((2# *# ix) +# 1#)) #)
-    ) 
-  readByteArray# arr ix s0 = case readWordArray# arr (2# *# ix) s0 of
-    (# s1, x #) -> case x of
-      0## -> (# s1, nothing #)
-      _ -> case readWordArray# arr ((2# *# ix) +# 1#) s1 of
-        (# s2, y #) -> (# s2, Maybe (# | y #) #)
-
-listToMaybe :: [Word] -> Maybe
+listToMaybe :: [Float] -> Maybe
 listToMaybe [] = nothing
 listToMaybe (x:_) = just x
 
-maybeToList :: Maybe -> [Word]
+maybeToList :: Maybe -> [Float]
 maybeToList = maybe [] (: [])
 
-catMaybes :: [Maybe] -> [Word]
+catMaybes :: [Maybe] -> [Float]
 catMaybes = mapMaybe id
 
-mapMaybe :: (a -> Maybe) -> [a] -> [Word]
+mapMaybe :: (a -> Maybe) -> [a] -> [Float]
 mapMaybe _ [] = []
 mapMaybe f (a : as) =
   let ws = mapMaybe f as
@@ -93,7 +77,7 @@ mapMaybe f (a : as) =
   #-}
 
 {-# NOINLINE [0] mapMaybeFB #-}
-mapMaybeFB :: (Word -> r -> r) -> (a -> Maybe) -> a -> r -> r
+mapMaybeFB :: (Float -> r -> r) -> (a -> Maybe) -> a -> r -> r
 mapMaybeFB cons f x next = maybe next (flip cons next) (f x)
 
 isNothing :: Maybe -> Bool
@@ -105,22 +89,21 @@ isJust = maybe False (const True)
 nothing :: Maybe
 nothing = Maybe (# (# #) | #)
 
-just :: Word -> Maybe
-just (W# w) = Maybe (# | w #)
+just :: Float -> Maybe
+just (F# d) = Maybe (# | d #)
 
-fromMaybe :: Word -> Maybe -> Word
+fromMaybe :: Float -> Maybe -> Float
 fromMaybe a (Maybe m) = case m of
   (# (# #) | #) -> a
-  (# | w #) -> W# w
+  (# | d #) -> F# d
 
-maybe :: a -> (Word -> a) -> Maybe -> a
+maybe :: a -> (Float -> a) -> Maybe -> a
 maybe a f (Maybe m) = case m of
   (# (# #) | #) -> a
-  (# | w #) -> f (W# w)
+  (# | d #) -> f (F# d)
 
-toBaseMaybe :: Maybe -> P.Maybe Word
+toBaseMaybe :: Maybe -> P.Maybe Float
 toBaseMaybe = maybe P.Nothing P.Just
 
-fromBaseMaybe :: P.Maybe Word -> Maybe
+fromBaseMaybe :: P.Maybe Float -> Maybe
 fromBaseMaybe = P.maybe nothing just
-

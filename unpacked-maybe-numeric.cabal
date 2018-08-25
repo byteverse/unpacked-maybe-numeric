@@ -19,6 +19,7 @@ source-repository head
 library
   exposed-modules:
     Data.Maybe.Unpacked.Numeric.Int
+    Data.Maybe.Unpacked.Numeric.Float
     Data.Maybe.Unpacked.Numeric.Word
   hs-source-dirs:
       src
