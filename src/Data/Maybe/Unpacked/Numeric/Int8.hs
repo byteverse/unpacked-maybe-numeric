@@ -17,7 +17,7 @@ module Data.Maybe.Unpacked.Numeric.Int8
 import Prelude hiding (Maybe,maybe)
 
 import GHC.Base (build)
-import GHC.Exts (Int#,(*#),(+#),and#,(==#))
+import GHC.Exts 
 import GHC.Int (Int8(I8#))
 import Data.Primitive.Types (Prim(..))
 
@@ -27,7 +27,7 @@ import Text.ParserCombinators.ReadPrec (prec, step)
 
 import qualified Prelude as P
 
-data Maybe = Maybe (# (# #) | Int# #)
+data Maybe = M Int#
 
 instance Eq Maybe where
   ma == mb =
@@ -38,11 +38,12 @@ instance Ord Maybe where
   compare ma mb = maybe LT (\a -> maybe GT (compare a) mb) ma  
 
 instance Show Maybe where
-  showsPrec p (Maybe m) = case m of
-    (# (# #) | #) -> showString "nothing"
-    (# | i #) -> showParen (p > 10)
-      $ showString "just "
-      . showsPrec 11 (I8# i)
+  showsPrec p m =
+    maybe (showString "nothing")
+      (\i -> showParen (p > 10)
+        $ showString "just "
+        . showsPrec 11 i
+      ) m
 
 instance Read Maybe where
   readPrec = parens $ nothingP +++ justP
@@ -56,14 +57,15 @@ instance Read Maybe where
         return (just a)
 
 listToMaybe :: [Int8] -> Maybe
+{-# INLINE listToMaybe #-}
 listToMaybe [] = nothing
 listToMaybe (x:_) = just x
 
 maybeToList :: Maybe -> [Int8]
-maybeToList = maybe [] (: [])
+maybeToList m = maybe [] (: []) m
 
 catMaybes :: [Maybe] -> [Int8]
-catMaybes = mapMaybe id
+catMaybes ms = mapMaybe id ms
 
 mapMaybe :: (a -> Maybe) -> [a] -> [Int8]
 mapMaybe _ [] = []
@@ -83,30 +85,38 @@ mapMaybeFB :: (Int8 -> r -> r) -> (a -> Maybe) -> a -> r -> r
 mapMaybeFB cons f x next = maybe next (flip cons next) (f x)
 
 isNothing :: Maybe -> Bool
-isNothing = maybe True (const False)
+{-# INLINE isNothing #-}
+isNothing m = maybe True (const False) m
 
 isJust :: Maybe -> Bool
-isJust = maybe False (const True)
+{-# INLINE isJust #-}
+isJust m = maybe False (const True) m
 
 nothing :: Maybe
-nothing = Maybe (# (# #) | #)
+{-# INLINE nothing #-}
+nothing = M 128#
 
 just :: Int8 -> Maybe
-just (I8# i) = Maybe (# | i #)
+{-# INLINE just #-}
+just (I8# i) = M i
 
 fromMaybe :: Int8 -> Maybe -> Int8
-fromMaybe a (Maybe m) = case m of
-  (# (# #) | #) -> a
-  (# | i #) -> I8# i
+{-# INLINE fromMaybe #-}
+fromMaybe a m = maybe a id m
 
 maybe :: a -> (Int8 -> a) -> Maybe -> a
-maybe a f (Maybe m) = case m of
-  (# (# #) | #) -> a
-  (# | i #) -> f (I8# i)
+{-# INLINE maybe #-}
+maybe a f (M m) = case m ># 127# of
+  1# -> a
+  _  -> case m <# -128# of
+    1# -> a
+    0# -> f (I8# m)
 
 toBaseMaybe :: Maybe -> P.Maybe Int8
-toBaseMaybe = maybe P.Nothing P.Just
+{-# INLINE toBaseMaybe #-}
+toBaseMaybe m = maybe P.Nothing P.Just m
 
 fromBaseMaybe :: P.Maybe Int8 -> Maybe
-fromBaseMaybe = P.maybe nothing just
+{-# INLINE fromBaseMaybe #-}
+fromBaseMaybe m = P.maybe nothing just m
 
