@@ -8,20 +8,28 @@ module Data.Maybe.Unpacked.Numeric.Word
   ( Maybe(..)
   , just
   , nothing
+
   , maybe
+
+  , isJust
+  , isNothing
   , fromMaybe
+  , listToMaybe
+  , maybeToList
+  , catMaybes
+  , mapMaybe
+
   , toBaseMaybe
   , fromBaseMaybe
-  ) where
-
+  ) where 
+  
 import Prelude hiding (Maybe,maybe)
 
 import GHC.Base (build)
-import GHC.Exts (Word#,(*#),(+#),and#,indexWordArray#,readWordArray#,word2Int#, (==#))
+import GHC.Exts (Word#)
 import GHC.Word (Word(W#))
-import Data.Primitive.Types (Prim(..))
 
-import GHC.Read (Read(readPrec), expectP)
+import GHC.Read (Read(readPrec))
 import Text.Read (parens, Lexeme(Ident), lexP, (+++))
 import Text.ParserCombinators.ReadPrec (prec, step)
 
@@ -54,20 +62,6 @@ instance Read Maybe where
         Ident "just" <- lexP
         a <- step readPrec
         return (just a)
-
-instance Prim Maybe where
-  sizeOf# _ = sizeOf# (undefined :: Word) *# 2#
-  alignment# _ = alignment# (undefined :: Word)
-  indexByteArray# arr ix = Maybe
-    (case indexWordArray# arr (2# *# ix) of
-      0## -> (# (# #) | #)
-      _ -> (# | (indexWordArray# arr ((2# *# ix) +# 1#)) #)
-    ) 
-  readByteArray# arr ix s0 = case readWordArray# arr (2# *# ix) s0 of
-    (# s1, x #) -> case x of
-      0## -> (# s1, nothing #)
-      _ -> case readWordArray# arr ((2# *# ix) +# 1#) s1 of
-        (# s2, y #) -> (# s2, Maybe (# | y #) #)
 
 listToMaybe :: [Word] -> Maybe
 listToMaybe [] = nothing

@@ -8,20 +8,28 @@ module Data.Maybe.Unpacked.Numeric.Int
   ( Maybe(..)
   , just
   , nothing
+
   , maybe
+
+  , isJust
+  , isNothing
   , fromMaybe
+  , listToMaybe
+  , maybeToList
+  , catMaybes
+  , mapMaybe
+
   , toBaseMaybe
   , fromBaseMaybe
-  ) where
+  ) where 
 
 import Prelude hiding (Maybe,maybe)
 
 import GHC.Base (build)
-import GHC.Exts (Int#,(*#),(+#),and#,word2Int#, (==#))
+import GHC.Exts (Int#)
 import GHC.Int (Int(I#))
-import Data.Primitive.Types (Prim(..))
 
-import GHC.Read (Read(readPrec), expectP)
+import GHC.Read (Read(readPrec))
 import Text.Read (parens, Lexeme(Ident), lexP, (+++))
 import Text.ParserCombinators.ReadPrec (prec, step)
 

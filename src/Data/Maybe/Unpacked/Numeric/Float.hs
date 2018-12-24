@@ -8,19 +8,27 @@ module Data.Maybe.Unpacked.Numeric.Float
   ( Maybe(..)
   , just
   , nothing
+
   , maybe
+
+  , isJust
+  , isNothing
   , fromMaybe
+  , listToMaybe
+  , maybeToList
+  , catMaybes
+  , mapMaybe
+
   , toBaseMaybe
   , fromBaseMaybe
-  ) where
+  ) where 
 
 import Prelude hiding (Maybe,maybe)
 
 import GHC.Base (build)
-import GHC.Exts (Float#,(*#),(+#),and#,word2Int#, (==#),Float(F#))
-import Data.Primitive.Types (Prim(..))
+import GHC.Exts (Float#,Float(F#))
 
-import GHC.Read (Read(readPrec), expectP)
+import GHC.Read (Read(readPrec))
 import Text.Read (parens, Lexeme(Ident), lexP, (+++))
 import Text.ParserCombinators.ReadPrec (prec, step)
 import qualified Prelude as P

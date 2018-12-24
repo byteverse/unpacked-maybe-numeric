@@ -5,21 +5,33 @@
 {-# LANGUAGE UnboxedTuples #-}
 
 module Data.Maybe.Unpacked.Numeric.Complex.Float
-  ( Maybe(..)
+  ( Complex(..)
+  , toBaseComplex
+  , fromBaseComplex
+  
+  , Maybe(..)
   , just
   , nothing
+
   , maybe
+
+  , isJust
+  , isNothing
   , fromMaybe
+  , listToMaybe
+  , maybeToList
+  , catMaybes
+  , mapMaybe
+
   , toBaseMaybe
   , fromBaseMaybe
-  ) where
+  ) where 
 
 import Prelude hiding (Maybe,maybe)
 
 import qualified Data.Complex as C
 import GHC.Base (build)
-import GHC.Exts (Float#,(*#),(+#),and#,word2Int#, (==#),Float(F#), (==##), eqFloat#)
-import Data.Primitive.Types (Prim(..))
+import GHC.Exts (Float#,Float(F#),eqFloat#)
 
 import GHC.Read (Read(readPrec), expectP)
 import Text.Read (parens, Lexeme(Ident), lexP, (+++))

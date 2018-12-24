@@ -8,20 +8,28 @@ module Data.Maybe.Unpacked.Numeric.Int32
   ( Maybe(..)
   , just
   , nothing
+
   , maybe
+
+  , isJust
+  , isNothing
   , fromMaybe
+  , listToMaybe
+  , maybeToList
+  , catMaybes
+  , mapMaybe
+
   , toBaseMaybe
   , fromBaseMaybe
-  ) where
-
+  ) where 
+ 
 import Prelude hiding (Maybe,maybe)
 
 import GHC.Base (build)
 import GHC.Exts 
 import GHC.Int (Int32(I32#))
-import Data.Primitive.Types (Prim(..))
 
-import GHC.Read (Read(readPrec), expectP)
+import GHC.Read (Read(readPrec))
 import Text.Read (parens, Lexeme(Ident), lexP, (+++))
 import Text.ParserCombinators.ReadPrec (prec, step)
 
@@ -112,7 +120,7 @@ maybe a f (M m) = case m ># 2147483647# of
   1# -> a
   _  -> case m <# -2147483648# of
     1# -> a
-    0# -> f (I32# m)
+    _  -> f (I32# m)
 
 toBaseMaybe :: Maybe -> P.Maybe Int32
 {-# INLINE toBaseMaybe #-}

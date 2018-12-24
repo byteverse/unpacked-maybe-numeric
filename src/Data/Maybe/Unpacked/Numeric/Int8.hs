@@ -8,8 +8,17 @@ module Data.Maybe.Unpacked.Numeric.Int8
   ( Maybe(..)
   , just
   , nothing
+
   , maybe
+
+  , isJust
+  , isNothing
   , fromMaybe
+  , listToMaybe
+  , maybeToList
+  , catMaybes
+  , mapMaybe
+
   , toBaseMaybe
   , fromBaseMaybe
   ) where
@@ -19,9 +28,8 @@ import Prelude hiding (Maybe,maybe)
 import GHC.Base (build)
 import GHC.Exts 
 import GHC.Int (Int8(I8#))
-import Data.Primitive.Types (Prim(..))
 
-import GHC.Read (Read(readPrec), expectP)
+import GHC.Read (Read(readPrec))
 import Text.Read (parens, Lexeme(Ident), lexP, (+++))
 import Text.ParserCombinators.ReadPrec (prec, step)
 
@@ -110,7 +118,7 @@ maybe a f (M m) = case m ># 127# of
   1# -> a
   _  -> case m <# -128# of
     1# -> a
-    0# -> f (I8# m)
+    _  -> f (I8# m)
 
 toBaseMaybe :: Maybe -> P.Maybe Int8
 {-# INLINE toBaseMaybe #-}
