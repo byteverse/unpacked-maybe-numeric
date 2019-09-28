@@ -25,7 +25,6 @@ module Data.Maybe.Unpacked.Numeric.Int8
 
 import Prelude hiding (Maybe,maybe)
 
-import GHC.Base (build)
 import GHC.Exts 
 import GHC.Int (Int8(I8#))
 

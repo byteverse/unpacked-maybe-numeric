@@ -25,7 +25,6 @@ module Data.Maybe.Unpacked.Numeric.Int32
  
 import Prelude hiding (Maybe,maybe)
 
-import GHC.Base (build)
 import GHC.Exts 
 import GHC.Int (Int32(I32#))
 
