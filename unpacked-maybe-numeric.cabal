@@ -51,6 +51,16 @@ library
   ghc-options: -Wall -O2
   default-language: Haskell2010
 
+test-suite spec
+  default-language: Haskell2010
+  ghc-options: -Wall
+  type: exitcode-stdio-1.0
+  main-is: spec.hs
+  hs-source-dirs: test
+  build-depends:
+    , base
+    , unpacked-maybe-numeric
+
 test-suite laws
   default-language: Haskell2010
   ghc-options: -Wall
