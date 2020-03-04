@@ -55,7 +55,7 @@ instance Show Maybe where
 instance Read Maybe where
   readPrec = parens $ nothingP +++ justP
     where
-      nothingP = prec 10 $ do
+      nothingP = do
         Ident "nothing" <- lexP
         return nothing
       justP = prec 10 $ do
