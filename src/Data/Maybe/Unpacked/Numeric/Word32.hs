@@ -1,6 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MagicHash #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE UnboxedSums #-}
 {-# LANGUAGE UnboxedTuples #-}
 
@@ -21,9 +23,13 @@ module Data.Maybe.Unpacked.Numeric.Word32
 
   , toBaseMaybe
   , fromBaseMaybe
+
+    -- * Patterns
+  , pattern Nothing
+  , pattern Just
   ) where   
 
-import Prelude hiding (Maybe,maybe)
+import Prelude hiding (Maybe,Nothing,Just,maybe)
 
 import GHC.Base (build)
 import GHC.Exts (Word#)
@@ -36,6 +42,13 @@ import Text.ParserCombinators.ReadPrec (prec, step)
 import qualified Prelude as P
 
 data Maybe = Maybe (# (# #) | Word# #)
+
+pattern Nothing :: Maybe
+pattern Nothing = Maybe (# (# #) | #)
+
+pattern Just :: Word32 -> Maybe
+pattern Just i <- Maybe (# | (W32# -> i) #)
+  where Just (W32# i) = Maybe (# | i #)
 
 instance Eq Maybe where
   ma == mb =
