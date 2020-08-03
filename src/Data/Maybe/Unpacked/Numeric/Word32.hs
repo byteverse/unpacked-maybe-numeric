@@ -50,6 +50,8 @@ pattern Just :: Word32 -> Maybe
 pattern Just i <- Maybe (# | (W32# -> i) #)
   where Just (W32# i) = Maybe (# | i #)
 
+{-# COMPLETE Nothing, Just #-}
+
 instance Eq Maybe where
   ma == mb =
     maybe (isNothing mb)
