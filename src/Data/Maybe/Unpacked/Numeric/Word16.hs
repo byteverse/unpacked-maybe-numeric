@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MagicHash #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE UnboxedSums #-}
 {-# LANGUAGE UnboxedTuples #-}
 
@@ -27,7 +28,8 @@ import Prelude hiding (Maybe,maybe)
 
 import GHC.Base (build)
 import GHC.Exts (Word#)
-import GHC.Word (Word16(W16#))
+import GHC.Word (Word16)
+import GHC.Word.Compat (pattern W16#)
 
 import GHC.Read (Read(readPrec))
 import Text.Read (parens, Lexeme(Ident), lexP, (+++))

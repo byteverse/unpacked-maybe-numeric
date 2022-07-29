@@ -33,7 +33,8 @@ import Prelude hiding (Maybe,Nothing,Just,maybe)
 
 import GHC.Base (build)
 import GHC.Exts (Word#)
-import GHC.Word (Word32(W32#))
+import GHC.Word (Word32)
+import GHC.Word.Compat (pattern W32#)
 
 import GHC.Read (Read(readPrec))
 import Text.Read (parens, Lexeme(Ident), lexP, (+++))

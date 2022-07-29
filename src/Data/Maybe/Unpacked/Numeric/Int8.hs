@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MagicHash #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE UnboxedSums #-}
 {-# LANGUAGE UnboxedTuples #-}
 
@@ -26,7 +27,8 @@ module Data.Maybe.Unpacked.Numeric.Int8
 import Prelude hiding (Maybe,maybe)
 
 import GHC.Exts 
-import GHC.Int (Int8(I8#))
+import GHC.Int (Int8)
+import GHC.Int.Compat (pattern I8#)
 
 import GHC.Read (Read(readPrec))
 import Text.Read (parens, Lexeme(Ident), lexP, (+++))
