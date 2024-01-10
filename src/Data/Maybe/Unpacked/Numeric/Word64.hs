@@ -26,7 +26,7 @@ module Data.Maybe.Unpacked.Numeric.Word64
 import Prelude hiding (Maybe,maybe)
 
 import GHC.Base (build)
-import GHC.Exts (Word#)
+import GHC.Exts (Word64#)
 import GHC.Word (Word64(W64#))
 
 import GHC.Read (Read(readPrec))
@@ -35,7 +35,7 @@ import Text.ParserCombinators.ReadPrec (prec, step)
 
 import qualified Prelude as P
 
-data Maybe = Maybe (# (# #) | Word# #)
+data Maybe = Maybe (# (# #) | Word64# #)
 
 instance Eq Maybe where
   ma == mb =
