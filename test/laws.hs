@@ -1,29 +1,29 @@
-{-# LANGUAGE MagicHash        #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE MagicHash #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
-import Test.QuickCheck.Arbitrary
-import Test.QuickCheck.Gen
-import Test.QuickCheck.Classes
 import Data.Proxy (Proxy (Proxy))
 import GHC.Exts
+import Test.QuickCheck.Arbitrary
+import Test.QuickCheck.Classes
+import Test.QuickCheck.Gen
 
-import qualified Data.Maybe.Unpacked.Numeric.Complex.Float  as MComplexFloat
 import qualified Data.Maybe.Unpacked.Numeric.Complex.Double as MComplexDouble
+import qualified Data.Maybe.Unpacked.Numeric.Complex.Float as MComplexFloat
 
-import qualified Data.Maybe.Unpacked.Numeric.Float  as MFloat
 import qualified Data.Maybe.Unpacked.Numeric.Double as MDouble
+import qualified Data.Maybe.Unpacked.Numeric.Float as MFloat
 
-import qualified Data.Maybe.Unpacked.Numeric.Int    as MInt
-import qualified Data.Maybe.Unpacked.Numeric.Int8   as MInt8
-import qualified Data.Maybe.Unpacked.Numeric.Int16  as MInt16
-import qualified Data.Maybe.Unpacked.Numeric.Int32  as MInt32
-import qualified Data.Maybe.Unpacked.Numeric.Int64  as MInt64
+import qualified Data.Maybe.Unpacked.Numeric.Int as MInt
+import qualified Data.Maybe.Unpacked.Numeric.Int16 as MInt16
+import qualified Data.Maybe.Unpacked.Numeric.Int32 as MInt32
+import qualified Data.Maybe.Unpacked.Numeric.Int64 as MInt64
+import qualified Data.Maybe.Unpacked.Numeric.Int8 as MInt8
 
-import qualified Data.Maybe.Unpacked.Numeric.Word   as MWord
-import qualified Data.Maybe.Unpacked.Numeric.Word8  as MWord8
+import qualified Data.Maybe.Unpacked.Numeric.Word as MWord
 import qualified Data.Maybe.Unpacked.Numeric.Word16 as MWord16
 import qualified Data.Maybe.Unpacked.Numeric.Word32 as MWord32
 import qualified Data.Maybe.Unpacked.Numeric.Word64 as MWord64
+import qualified Data.Maybe.Unpacked.Numeric.Word8 as MWord8
 
 main :: IO ()
 main = lawsCheckMany allPropsApplied
@@ -34,17 +34,21 @@ allLaws ::
   , Ord a
   , Show a
   , Read a
-  ) => Proxy a -> [Laws]
-allLaws p = map ($ p)
-  [ eqLaws, ordLaws, showReadLaws
-  ]
-
+  ) =>
+  Proxy a ->
+  [Laws]
+allLaws p =
+  map
+    ($ p)
+    [ eqLaws
+    , ordLaws
+    , showReadLaws
+    ]
 
 allPropsApplied :: [(String, [Laws])]
 allPropsApplied =
   [ ("Maybe (Complex Float)", map ($ (Proxy :: Proxy MComplexFloat.Maybe)) [eqLaws, showReadLaws])
   , ("Maybe (Complex Double)", map ($ (Proxy :: Proxy MComplexDouble.Maybe)) [eqLaws, showReadLaws])
-
   , ("Maybe Float", allLaws (Proxy :: Proxy MFloat.Maybe))
   , ("Maybe Double", allLaws (Proxy :: Proxy MDouble.Maybe))
   , ("Maybe Int8", allLaws (Proxy :: Proxy MInt8.Maybe))
@@ -78,16 +82,16 @@ instance Arbitrary MComplexDouble.Complex where
     pure (MComplexDouble.Complex (unDouble x) (unDouble y))
 
 instance Arbitrary MComplexFloat.Maybe where
-  arbitrary = frequency [(1,pure MComplexFloat.nothing), (1, MComplexFloat.just <$> arbitrary)]
+  arbitrary = frequency [(1, pure MComplexFloat.nothing), (1, MComplexFloat.just <$> arbitrary)]
 
 instance Arbitrary MComplexDouble.Maybe where
-  arbitrary = frequency [(1,pure MComplexDouble.nothing), (1, MComplexDouble.just <$> arbitrary)]
+  arbitrary = frequency [(1, pure MComplexDouble.nothing), (1, MComplexDouble.just <$> arbitrary)]
 
 instance Arbitrary MFloat.Maybe where
-  arbitrary = frequency [(1,pure MFloat.nothing), (1, MFloat.just <$> arbitrary)]
+  arbitrary = frequency [(1, pure MFloat.nothing), (1, MFloat.just <$> arbitrary)]
 
 instance Arbitrary MDouble.Maybe where
-  arbitrary = frequency [(1,pure MDouble.nothing), (1, MDouble.just <$> arbitrary)]
+  arbitrary = frequency [(1, pure MDouble.nothing), (1, MDouble.just <$> arbitrary)]
 
 instance Arbitrary MWord8.Maybe where
   arbitrary = frequency [(1, pure MWord8.nothing), (1, MWord8.just <$> arbitrary)]

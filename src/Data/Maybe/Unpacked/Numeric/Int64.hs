@@ -1,16 +1,11 @@
-{-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MagicHash #-}
-{-# LANGUAGE UnboxedSums #-}
 {-# LANGUAGE UnboxedTuples #-}
 
 module Data.Maybe.Unpacked.Numeric.Int64
-  ( Maybe(..)
+  ( Maybe (..)
   , just
   , nothing
-
   , maybe
-
   , isJust
   , isNothing
   , fromMaybe
@@ -18,20 +13,19 @@ module Data.Maybe.Unpacked.Numeric.Int64
   , maybeToList
   , catMaybes
   , mapMaybe
-
   , toBaseMaybe
   , fromBaseMaybe
-  ) where 
+  ) where
 
-import Prelude hiding (Maybe,maybe)
+import Prelude hiding (Maybe, maybe)
 
 import GHC.Base (build)
 import GHC.Exts (Int64#)
-import GHC.Int (Int64(I64#))
+import GHC.Int (Int64 (I64#))
 
-import GHC.Read (Read(readPrec))
-import Text.Read (parens, Lexeme(Ident), lexP, (+++))
+import GHC.Read (Read (readPrec))
 import Text.ParserCombinators.ReadPrec (prec, step)
+import Text.Read (Lexeme (Ident), lexP, parens, (+++))
 
 import qualified Prelude as P
 
@@ -39,33 +33,36 @@ data Maybe = Maybe (# (# #) | Int64# #)
 
 instance Eq Maybe where
   ma == mb =
-    maybe (isNothing mb)
-          (\a -> maybe False (\b -> a == b) mb) ma
-    
+    maybe
+      (isNothing mb)
+      (\a -> maybe False (\b -> a == b) mb)
+      ma
+
 instance Ord Maybe where
-  compare ma mb = maybe LT (\a -> maybe GT (compare a) mb) ma  
+  compare ma mb = maybe LT (\a -> maybe GT (compare a) mb) ma
 
 instance Show Maybe where
   showsPrec p (Maybe m) = case m of
     (# (# #) | #) -> showString "nothing"
-    (# | i #) -> showParen (p > 10)
-      $ showString "just "
-      . showsPrec 11 (I64# i)
+    (# | i #) ->
+      showParen (p > 10) $
+        showString "just "
+          . showsPrec 11 (I64# i)
 
 instance Read Maybe where
   readPrec = parens $ nothingP +++ justP
-    where
-      nothingP = do
-        Ident "nothing" <- lexP
-        return nothing
-      justP = prec 10 $ do
-        Ident "just" <- lexP
-        a <- step readPrec
-        return (just a)
+   where
+    nothingP = do
+      Ident "nothing" <- lexP
+      return nothing
+    justP = prec 10 $ do
+      Ident "just" <- lexP
+      a <- step readPrec
+      return (just a)
 
 listToMaybe :: [Int64] -> Maybe
 listToMaybe [] = nothing
-listToMaybe (x:_) = just x
+listToMaybe (x : _) = just x
 
 maybeToList :: Maybe -> [Int64]
 maybeToList = maybe [] (: [])
@@ -77,13 +74,14 @@ mapMaybe :: (a -> Maybe) -> [a] -> [Int64]
 mapMaybe _ [] = []
 mapMaybe f (a : as) =
   let ws = mapMaybe f as
-  in maybe ws (: ws) (f a)
+   in maybe ws (: ws) (f a)
 {-# NOINLINE [1] mapMaybe #-}
 
 {-# RULES
-"mapMaybe"     [~1] forall f xs. mapMaybe f xs
-                    = build (\c n -> foldr (mapMaybeFB c f) n xs)
-"mapMaybeList" [1]  forall f. foldr (mapMaybeFB (:) f) [] = mapMaybe f
+"mapMaybe" [~1] forall f xs.
+  mapMaybe f xs =
+    build (\c n -> foldr (mapMaybeFB c f) n xs)
+"mapMaybeList" [1] forall f. foldr (mapMaybeFB (:) f) [] = mapMaybe f
   #-}
 
 {-# NOINLINE [0] mapMaybeFB #-}
@@ -117,4 +115,3 @@ toBaseMaybe = maybe P.Nothing P.Just
 
 fromBaseMaybe :: P.Maybe Int64 -> Maybe
 fromBaseMaybe = P.maybe nothing just
-
