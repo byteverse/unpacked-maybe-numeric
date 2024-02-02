@@ -1,20 +1,14 @@
-{-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MagicHash #-}
-{-# LANGUAGE UnboxedSums #-}
 {-# LANGUAGE UnboxedTuples #-}
 
 module Data.Maybe.Unpacked.Numeric.Complex.Double
-  ( Complex(..)
+  ( Complex (..)
   , toBaseComplex
   , fromBaseComplex
-  
-  , Maybe(..)
+  , Maybe (..)
   , just
   , nothing
-
   , maybe
-
   , isJust
   , isNothing
   , fromMaybe
@@ -22,20 +16,19 @@ module Data.Maybe.Unpacked.Numeric.Complex.Double
   , maybeToList
   , catMaybes
   , mapMaybe
-
   , toBaseMaybe
   , fromBaseMaybe
-  ) where  
-  
-import Prelude hiding (Maybe,maybe)
+  ) where
+
+import Prelude hiding (Maybe, maybe)
 
 import qualified Data.Complex as C
 import GHC.Base (build)
-import GHC.Exts (Double#,Double(D#),(==##))
+import GHC.Exts (Double (D#), Double#, (==##))
 
-import GHC.Read (Read(readPrec), expectP)
-import Text.Read (parens, Lexeme(Ident), lexP, (+++))
+import GHC.Read (Read (readPrec), expectP)
 import Text.ParserCombinators.ReadPrec (prec, step)
+import Text.Read (Lexeme (Ident), lexP, parens, (+++))
 import qualified Prelude as P
 
 data Complex = Complex Double# Double#
@@ -44,20 +37,20 @@ toBaseComplex :: Complex -> C.Complex Double
 toBaseComplex (Complex d1# d2#) = (D# d1#) C.:+ (D# d2#)
 
 fromBaseComplex :: C.Complex Double -> Complex
-fromBaseComplex ( (D# d1#) C.:+ (D# d2#) ) = Complex d1# d2#
+fromBaseComplex ((D# d1#) C.:+ (D# d2#)) = Complex d1# d2#
 
 instance Eq Complex where
   Complex a b == Complex c d =
     case a ==## c of
       1# -> case b ==## d of
         1# -> True
-        _   -> False
-      _   -> False
+        _ -> False
+      _ -> False
 
 instance Show Complex where
-  showsPrec p (Complex a b)
-    = showParen (p >= 11)
-        $ showString "Complex "
+  showsPrec p (Complex a b) =
+    showParen (p >= 11) $
+      showString "Complex "
         . showsPrec 11 (D# a)
         . showString " "
         . showsPrec 11 (D# b)
@@ -73,30 +66,33 @@ data Maybe = Maybe (# (# #) | Complex #)
 
 instance Eq Maybe where
   ma == mb =
-    maybe (isNothing mb)
-          (\a -> maybe False (\b -> a == b) mb) ma
-    
+    maybe
+      (isNothing mb)
+      (\a -> maybe False (\b -> a == b) mb)
+      ma
+
 instance Show Maybe where
   showsPrec p (Maybe m) = case m of
     (# (# #) | #) -> showString "nothing"
-    (# | c #) -> showParen (p > 10)
-      $ showString "just "
-      . showsPrec 11 c
+    (# | c #) ->
+      showParen (p > 10) $
+        showString "just "
+          . showsPrec 11 c
 
 instance Read Maybe where
   readPrec = parens $ nothingP +++ justP
-    where
-      nothingP = do
-        Ident "nothing" <- lexP
-        return nothing
-      justP = prec 10 $ do
-        Ident "just" <- lexP
-        a <- step readPrec
-        return (just a)
+   where
+    nothingP = do
+      Ident "nothing" <- lexP
+      return nothing
+    justP = prec 10 $ do
+      Ident "just" <- lexP
+      a <- step readPrec
+      return (just a)
 
 listToMaybe :: [Complex] -> Maybe
 listToMaybe [] = nothing
-listToMaybe (x:_) = just x
+listToMaybe (x : _) = just x
 
 maybeToList :: Maybe -> [Complex]
 maybeToList = maybe [] (: [])
@@ -108,13 +104,14 @@ mapMaybe :: (a -> Maybe) -> [a] -> [Complex]
 mapMaybe _ [] = []
 mapMaybe f (a : as) =
   let ws = mapMaybe f as
-  in maybe ws (: ws) (f a)
+   in maybe ws (: ws) (f a)
 {-# NOINLINE [1] mapMaybe #-}
 
 {-# RULES
-"mapMaybe"     [~1] forall f xs. mapMaybe f xs
-                    = build (\c n -> foldr (mapMaybeFB c f) n xs)
-"mapMaybeList" [1]  forall f. foldr (mapMaybeFB (:) f) [] = mapMaybe f
+"mapMaybe" [~1] forall f xs.
+  mapMaybe f xs =
+    build (\c n -> foldr (mapMaybeFB c f) n xs)
+"mapMaybeList" [1] forall f. foldr (mapMaybeFB (:) f) [] = mapMaybe f
   #-}
 
 {-# NOINLINE [0] mapMaybeFB #-}
@@ -148,4 +145,3 @@ toBaseMaybe = maybe P.Nothing P.Just
 
 fromBaseMaybe :: P.Maybe Complex -> Maybe
 fromBaseMaybe = P.maybe nothing just
-

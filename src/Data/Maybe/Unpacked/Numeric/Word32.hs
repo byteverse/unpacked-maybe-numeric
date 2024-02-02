@@ -1,18 +1,13 @@
-{-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MagicHash #-}
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE UnboxedSums #-}
 {-# LANGUAGE UnboxedTuples #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Data.Maybe.Unpacked.Numeric.Word32
-  ( Maybe(..)
+  ( Maybe (..)
   , just
   , nothing
-
   , maybe
-
   , isJust
   , isNothing
   , fromMaybe
@@ -20,25 +15,24 @@ module Data.Maybe.Unpacked.Numeric.Word32
   , maybeToList
   , catMaybes
   , mapMaybe
-
   , toBaseMaybe
   , fromBaseMaybe
 
     -- * Patterns
   , pattern Nothing
   , pattern Just
-  ) where   
+  ) where
 
-import Prelude hiding (Maybe,Nothing,Just,maybe)
+import Prelude hiding (Just, Maybe, Nothing, maybe)
 
 import GHC.Base (build)
 import GHC.Exts (Word#)
 import GHC.Word (Word32)
 import GHC.Word.Compat (pattern W32#)
 
-import GHC.Read (Read(readPrec))
-import Text.Read (parens, Lexeme(Ident), lexP, (+++))
+import GHC.Read (Read (readPrec))
 import Text.ParserCombinators.ReadPrec (prec, step)
+import Text.Read (Lexeme (Ident), lexP, parens, (+++))
 
 import qualified Prelude as P
 
@@ -49,39 +43,43 @@ pattern Nothing = Maybe (# (# #) | #)
 
 pattern Just :: Word32 -> Maybe
 pattern Just i <- Maybe (# | (W32# -> i) #)
-  where Just (W32# i) = Maybe (# | i #)
+  where
+    Just (W32# i) = Maybe (# | i #)
 
 {-# COMPLETE Nothing, Just #-}
 
 instance Eq Maybe where
   ma == mb =
-    maybe (isNothing mb)
-          (\a -> maybe False (\b -> a == b) mb) ma
-    
+    maybe
+      (isNothing mb)
+      (\a -> maybe False (\b -> a == b) mb)
+      ma
+
 instance Ord Maybe where
-  compare ma mb = maybe LT (\a -> maybe GT (compare a) mb) ma  
+  compare ma mb = maybe LT (\a -> maybe GT (compare a) mb) ma
 
 instance Show Maybe where
   showsPrec p (Maybe m) = case m of
     (# (# #) | #) -> showString "nothing"
-    (# | w #) -> showParen (p > 10)
-      $ showString "just "
-      . showsPrec 11 (W32# w)
+    (# | w #) ->
+      showParen (p > 10) $
+        showString "just "
+          . showsPrec 11 (W32# w)
 
 instance Read Maybe where
   readPrec = parens $ nothingP +++ justP
-    where
-      nothingP = do
-        Ident "nothing" <- lexP
-        return nothing
-      justP = prec 10 $ do
-        Ident "just" <- lexP
-        a <- step readPrec
-        return (just a)
+   where
+    nothingP = do
+      Ident "nothing" <- lexP
+      return nothing
+    justP = prec 10 $ do
+      Ident "just" <- lexP
+      a <- step readPrec
+      return (just a)
 
 listToMaybe :: [Word32] -> Maybe
 listToMaybe [] = nothing
-listToMaybe (x:_) = just x
+listToMaybe (x : _) = just x
 
 maybeToList :: Maybe -> [Word32]
 maybeToList = maybe [] (: [])
@@ -93,13 +91,14 @@ mapMaybe :: (a -> Maybe) -> [a] -> [Word32]
 mapMaybe _ [] = []
 mapMaybe f (a : as) =
   let ws = mapMaybe f as
-  in maybe ws (: ws) (f a)
+   in maybe ws (: ws) (f a)
 {-# NOINLINE [1] mapMaybe #-}
 
 {-# RULES
-"mapMaybe"     [~1] forall f xs. mapMaybe f xs
-                    = build (\c n -> foldr (mapMaybeFB c f) n xs)
-"mapMaybeList" [1]  forall f. foldr (mapMaybeFB (:) f) [] = mapMaybe f
+"mapMaybe" [~1] forall f xs.
+  mapMaybe f xs =
+    build (\c n -> foldr (mapMaybeFB c f) n xs)
+"mapMaybeList" [1] forall f. foldr (mapMaybeFB (:) f) [] = mapMaybe f
   #-}
 
 {-# NOINLINE [0] mapMaybeFB #-}
@@ -133,4 +132,3 @@ toBaseMaybe = maybe P.Nothing P.Just
 
 fromBaseMaybe :: P.Maybe Word32 -> Maybe
 fromBaseMaybe = P.maybe nothing just
-
