@@ -1,6 +1,8 @@
 {-# LANGUAGE MagicHash #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE UnboxedSums #-}
+{-# LANGUAGE UnboxedTuples #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Data.Maybe.Unpacked.Numeric.Int32
   ( Maybe (..)
@@ -16,9 +18,12 @@ module Data.Maybe.Unpacked.Numeric.Int32
   , mapMaybe
   , toBaseMaybe
   , fromBaseMaybe
+    -- * Patterns
+  , pattern Nothing
+  , pattern Just
   ) where
 
-import Prelude hiding (Maybe, maybe)
+import Prelude hiding (Just, Maybe, Nothing, maybe)
 
 import GHC.Exts
 import GHC.Int (Int32)
@@ -41,8 +46,13 @@ instance Eq Maybe where
   {-# INLINE (==) #-}
 
 instance Ord Maybe where
-  compare ma mb = maybe LT (\a -> maybe GT (compare a) mb) ma
-  {-# INLINE compare #-}
+  compare ma mb = case ma of
+    Just a -> case mb of
+      Just b -> compare a b
+      _ -> GT
+    _ -> case mb of
+      Just{} -> LT
+      _ -> EQ
 
 instance Show Maybe where
   showsPrec p m =
@@ -130,3 +140,17 @@ toBaseMaybe m = maybe P.Nothing P.Just m
 fromBaseMaybe :: P.Maybe Int32 -> Maybe
 {-# INLINE fromBaseMaybe #-}
 fromBaseMaybe m = P.maybe nothing just m
+
+pattern Nothing :: Maybe
+pattern Nothing = M 2147483648#
+
+pattern Just :: Int32 -> Maybe
+pattern Just i <- (maybeInt32ToInt32 -> (# | i #))
+  where
+    Just (I32# i) = M i
+
+maybeInt32ToInt32 :: Maybe -> (# (# #) | Int32 #)
+{-# inline maybeInt32ToInt32 #-}
+maybeInt32ToInt32 (M i) = case i of
+  2147483648# -> (# (# #) | #)
+  _ -> (# | I32# i #)

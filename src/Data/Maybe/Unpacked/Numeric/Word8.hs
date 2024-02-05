@@ -1,6 +1,7 @@
 {-# LANGUAGE MagicHash #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE UnboxedTuples #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Data.Maybe.Unpacked.Numeric.Word8
   ( Maybe (..)
@@ -16,9 +17,12 @@ module Data.Maybe.Unpacked.Numeric.Word8
   , mapMaybe
   , toBaseMaybe
   , fromBaseMaybe
+    -- * Patterns
+  , pattern Nothing
+  , pattern Just
   ) where
 
-import Prelude hiding (Maybe, maybe)
+import Prelude hiding (Just, Maybe, Nothing, maybe)
 
 import GHC.Base (build)
 import GHC.Exts (Word#)
@@ -41,7 +45,13 @@ instance Eq Maybe where
       ma
 
 instance Ord Maybe where
-  compare ma mb = maybe LT (\a -> maybe GT (compare a) mb) ma
+  compare ma mb = case ma of
+    Just a -> case mb of
+      Just b -> compare a b
+      _ -> GT
+    _ -> case mb of
+      Just{} -> LT
+      _ -> EQ
 
 instance Show Maybe where
   showsPrec p (Maybe m) = case m of
@@ -117,3 +127,13 @@ toBaseMaybe = maybe P.Nothing P.Just
 
 fromBaseMaybe :: P.Maybe Word8 -> Maybe
 fromBaseMaybe = P.maybe nothing just
+
+pattern Nothing :: Maybe
+pattern Nothing = Maybe (# (# #) | #)
+
+pattern Just :: Word8 -> Maybe
+pattern Just i <- Maybe (# | (W8# -> i) #)
+  where
+    Just (W8# i) = Maybe (# | i #)
+
+{-# COMPLETE Nothing, Just #-}

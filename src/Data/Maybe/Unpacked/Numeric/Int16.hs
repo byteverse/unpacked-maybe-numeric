@@ -1,6 +1,8 @@
 {-# LANGUAGE MagicHash #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE UnboxedSums #-}
+{-# LANGUAGE UnboxedTuples #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Data.Maybe.Unpacked.Numeric.Int16
   ( Maybe (..)
@@ -16,9 +18,12 @@ module Data.Maybe.Unpacked.Numeric.Int16
   , mapMaybe
   , toBaseMaybe
   , fromBaseMaybe
+    -- * Patterns
+  , pattern Nothing
+  , pattern Just
   ) where
 
-import Prelude hiding (Maybe, maybe)
+import Prelude hiding (Just, Maybe, Nothing, maybe)
 
 import GHC.Base (build)
 import GHC.Exts (Int#, (<#), (>#))
@@ -41,7 +46,13 @@ instance Eq Maybe where
       ma
 
 instance Ord Maybe where
-  compare ma mb = maybe LT (\a -> maybe GT (compare a) mb) ma
+  compare ma mb = case ma of
+    Just a -> case mb of
+      Just b -> compare a b
+      _ -> GT
+    _ -> case mb of
+      Just{} -> LT
+      _ -> EQ
 
 instance Show Maybe where
   showsPrec p m =
@@ -129,3 +140,17 @@ toBaseMaybe m = maybe P.Nothing P.Just m
 fromBaseMaybe :: P.Maybe Int16 -> Maybe
 {-# INLINE fromBaseMaybe #-}
 fromBaseMaybe m = P.maybe nothing just m
+
+pattern Nothing :: Maybe
+pattern Nothing = M 32768#
+
+pattern Just :: Int16 -> Maybe
+pattern Just i <- (maybeInt16ToInt16 -> (# | i #))
+  where
+    Just (I16# i) = M i
+
+maybeInt16ToInt16 :: Maybe -> (# (# #) | Int16 #)
+{-# inline maybeInt16ToInt16 #-}
+maybeInt16ToInt16 (M i) = case i of
+  32768# -> (# (# #) | #)
+  _ -> (# | I16# i #)
