@@ -1,6 +1,6 @@
 # Changelog for unpacked-maybe-numeric
 
-## 0.1.3.1 -- 2024-02-01
+## 0.1.3.1 -- 2024-02-14
 
 * Update package metadata.
 * Fix failing test suite.
