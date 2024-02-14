@@ -39,7 +39,13 @@ instance Eq Maybe where
       ma
 
 instance Ord Maybe where
-  compare ma mb = maybe LT (\a -> maybe GT (compare a) mb) ma
+  compare (Maybe ma) (Maybe mb) = case ma of
+    (# (# #) | #) -> case mb of
+      (# (# #) | #) -> EQ
+      (# | _ #) -> LT
+    (# | a #) -> case mb of
+      (# (# #) | #) -> GT
+      (# | b #) -> compare (I# a) (I# b)
 
 instance Show Maybe where
   showsPrec p (Maybe m) = case m of
